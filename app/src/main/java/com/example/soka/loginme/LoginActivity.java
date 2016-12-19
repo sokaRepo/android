@@ -3,7 +3,9 @@ package com.example.soka.loginme;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +21,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -28,6 +31,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,30 +41,26 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor>, APIReceiver.Receiver {
 
     /**
      * Id to identity READ_CONTACTS permission request.
      */
     private static final int REQUEST_READ_CONTACTS = 0;
 
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    private UserLoginTask mAuthTask = null;
+
 
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+
+    private APIReceiver apiReceiver;
+    private Intent intentAPI;
+    final String APIURL = "http://api.mobile.crashlab.org";
+
+    DatabaseController db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +92,55 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        apiReceiver = new APIReceiver(new Handler());
+        apiReceiver.setReceiver(this);
+        intentAPI = new Intent(Intent.ACTION_SYNC, null, this, APIClient.class);
+        // On lancera le service lorsque l'utilisateur se loggera
     }
+
+    @Override
+    public void onReceiveResult(int resultCode, Bundle resultData) {
+        switch (resultCode) {
+            case APIClient.STATUS_RUNNING:
+
+                //setProgressBarIndeterminateVisibility(true);
+                break;
+            case APIClient.STATUS_FINISHED:
+                /* Hide progress & extract result from bundle */
+                //setProgressBarIndeterminateVisibility(false);
+
+                String results = resultData.getString("resp");
+                showProgress(false);
+
+                if (results.equals("ok")) {
+                    Toast.makeText(this, R.string.succes_login, Toast.LENGTH_LONG).show();
+                    /* Mise à jour de la base de données */
+                    db = new DatabaseController(getApplicationContext());
+                    db.updateSettingByName("name", mEmailView.getText().toString());
+                    db.close();
+                    /* On lance la 2eme activité */
+                    Intent loggedInt = new Intent(this, LoggedActivity.class);
+                    startActivity(loggedInt);
+                }
+                else if (results.equals("INVALID_CRED")){
+                    Toast.makeText(this, R.string.error_credentials, Toast.LENGTH_LONG).show();
+                }
+                else {
+                    Toast.makeText(this, R.string.no_internet, Toast.LENGTH_LONG).show();
+                }
+
+
+
+                break;
+            case APIClient.STATUS_ERROR:
+                /* Handle the error */
+                String error = resultData.getString(Intent.EXTRA_TEXT);
+                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+                break;
+        }
+    }
+
 
     private void populateAutoComplete() {
         if (!mayRequestContacts()) {
@@ -144,9 +192,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
-        }
 
         // Reset errors.
         mEmailView.setError(null);
@@ -160,8 +205,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
+        if (TextUtils.isEmpty(password)) {
+            mPasswordView.setError(getString(R.string.error_field_required));
             focusView = mPasswordView;
             cancel = true;
         }
@@ -171,34 +216,25 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-        } else if (!isEmailValid(email)) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
-            focusView = mEmailView;
-            cancel = true;
         }
 
         if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
+            // Erreur avec le login ou password, on focus sur le champ erroné
             focusView.requestFocus();
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
+            // On cache la login form + affichage chargement
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
+            intentAPI.putExtra("mode", "login");
+            intentAPI.putExtra("url", APIURL);
+            intentAPI.putExtra("email", email);
+            intentAPI.putExtra("password", password);
+            intentAPI.putExtra("receiver", apiReceiver);
+            intentAPI.putExtra("requestId", 101);
+            startService(intentAPI);
+            Log.d("DEBUB", "Start Service");
         }
     }
 
-    private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
-        return email.contains("@");
-    }
-
-    private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() > 4;
-    }
 
     /**
      * Shows the progress UI and hides the login form.
@@ -290,61 +326,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         int IS_PRIMARY = 1;
     }
 
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
-        private final String mEmail;
-        private final String mPassword;
-
-        UserLoginTask(String email, String password) {
-            mEmail = email;
-            mPassword = password;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
-
-            // TODO: register the new account here.
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (success) {
-                finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
-        }
-    }
 }
 

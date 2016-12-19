@@ -12,12 +12,12 @@
         "source": "/home/soka/AndroidStudioProjects/LoginMe/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/25.0.1/res/layout/notification_action.xml"
     },
     {
-        "merged": "/home/soka/AndroidStudioProjects/LoginMe/app/build/intermediates/res/merged/debug/layout/notification_template_big_media_custom.xml",
-        "source": "/home/soka/AndroidStudioProjects/LoginMe/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/25.0.1/res/layout/notification_template_big_media_custom.xml"
-    },
-    {
         "merged": "/home/soka/AndroidStudioProjects/LoginMe/app/build/intermediates/res/merged/debug/layout/notification_template_lines_media.xml",
         "source": "/home/soka/AndroidStudioProjects/LoginMe/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/25.0.1/res/layout/notification_template_lines_media.xml"
+    },
+    {
+        "merged": "/home/soka/AndroidStudioProjects/LoginMe/app/build/intermediates/res/merged/debug/layout/notification_template_big_media_custom.xml",
+        "source": "/home/soka/AndroidStudioProjects/LoginMe/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/25.0.1/res/layout/notification_template_big_media_custom.xml"
     },
     {
         "merged": "/home/soka/AndroidStudioProjects/LoginMe/app/build/intermediates/res/merged/debug/layout/abc_activity_chooser_view_list_item.xml",
@@ -134,6 +134,10 @@
     {
         "merged": "/home/soka/AndroidStudioProjects/LoginMe/app/build/intermediates/res/merged/debug/layout/abc_popup_menu_header_item_layout.xml",
         "source": "/home/soka/AndroidStudioProjects/LoginMe/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/25.0.1/res/layout/abc_popup_menu_header_item_layout.xml"
+    },
+    {
+        "merged": "/home/soka/AndroidStudioProjects/LoginMe/app/build/intermediates/res/merged/debug/layout/activity_logged.xml",
+        "source": "/home/soka/AndroidStudioProjects/LoginMe/app/src/main/res/layout/activity_logged.xml"
     },
     {
         "merged": "/home/soka/AndroidStudioProjects/LoginMe/app/build/intermediates/res/merged/debug/layout/abc_alert_dialog_button_bar_material.xml",

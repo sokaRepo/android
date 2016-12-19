@@ -1,16 +1,18 @@
 <resources>
-    <string name="app_name">LoginMe</string>
+    <string name="app_name">LoginMeToMyAPI</string>
 
     <!-- Strings related to login -->
-    <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing email
-        completions."
+    <string name="input_username">Nom d\'utilisateur</string>
+    <string name="input_password">Mot de passe</string>
+    <string name="input_submit">Se connecter</string>
+    <string name="succes_login">Connexion établie</string>
+    <string name="welcome_msg">Bonjour</string>
+    <string name="action_sign_in_short">Mot de passe trop petit</string>
+    <string name="error_invalid_password">Mot de passe trop petit</string>
+    <string name="error_incorrect_password">Mot de passe incorrect</string>
+    <string name="error_field_required">Ce champ est requis</string>
+    <string name="error_credentials">Nom d\'utilisateur ou mot de passe incorrect</string>
+    <string name="no_internet">Pas de connexion internet</string>
+    <string name="permission_rationale">"La permission pour accèder aux contacts est nécessaire"
     </string>
 </resources>
